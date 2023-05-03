@@ -13,6 +13,7 @@ class Item extends Component {
         return (
             <div className="Item">
                 <input className="Item-input" value={this.props.itemName} onChange={this.props.onItemNameChange} placeholder="Item name is empty" />
+                <button className="Item-btn" onClick={this.props.onUpdateClick}>Update</button>
                 <button className="Item-btn" onClick={this.props.onRemoveClick}>X</button>
             </div>
         )

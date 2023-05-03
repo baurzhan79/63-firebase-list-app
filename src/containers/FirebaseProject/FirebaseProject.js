@@ -70,22 +70,26 @@ class FirebaseProject extends Component {
             return;
         };
 
-        const DateInMilliseconds = new Date().getTime();
-        const newItem = {
-            id: DateInMilliseconds,
-            name: this.state[newItemName]
-        }
+        // const DateInMilliseconds = new Date().getTime();
+        // const newItem = {
+        //     id: DateInMilliseconds,
+        //     name: this.state[newItemName]
+        // }
 
-        if (newItemName === "newToDoName") {
-            const itemsCopy = [...this.state.toDoList];
-            itemsCopy.push(newItem);
-            this.setState({ toDoList: itemsCopy, newToDoName: "" });
-        }
-        else {
-            const itemsCopy = [...this.state.movieNamesList];
-            itemsCopy.push(newItem);
-            this.setState({ movieNamesList: itemsCopy, newMovieName: "" });
-        }
+        // if (newItemName === "newToDoName") {
+        //     const itemsCopy = [...this.state.toDoList];
+        //     itemsCopy.push(newItem);
+        //     this.setState({ toDoList: itemsCopy, newToDoName: "" });
+        // }
+        // else {
+        //     const itemsCopy = [...this.state.movieNamesList];
+        //     itemsCopy.push(newItem);
+        //     this.setState({ movieNamesList: itemsCopy, newMovieName: "" });
+        // }
+
+        this.sendNewItemToServer(this.state.activeLink, this.state[newItemName]);
+        if (newItemName === "newToDoName") this.setState({ newToDoName: "" });
+        else this.setState({ newMovieName: "" });
     }
 
     // ------- Items -------//
@@ -97,12 +101,26 @@ class FirebaseProject extends Component {
         else this.setState({ toDoList: itemsCopy });
     }
 
-    removeItem(id, currentList, currentListName) {
+    updateItem(id, currentList) {
         const index = currentList.findIndex(p => p.id === id);
-        const itemsCopy = [...currentList];
-        itemsCopy.splice(index, 1);
-        if (currentListName === "movieNamesList") this.setState({ movieNamesList: itemsCopy });
-        else this.setState({ toDoList: itemsCopy });
+        const updatedName = currentList[index].name;
+        this.updateItemOnServer(this.state.activeLink, id, updatedName);
+
+        // const index = currentList.findIndex(p => p.id === id);
+        // const itemsCopy = [...currentList];
+        // itemsCopy.splice(index, 1);
+        // if (currentListName === "movieNamesList") this.setState({ movieNamesList: itemsCopy });
+        // else this.setState({ toDoList: itemsCopy });
+    }
+
+    removeItem(id, currentList, currentListName) {
+        this.deleteItemOnServer(this.state.activeLink, id);
+
+        // const index = currentList.findIndex(p => p.id === id);
+        // const itemsCopy = [...currentList];
+        // itemsCopy.splice(index, 1);
+        // if (currentListName === "movieNamesList") this.setState({ movieNamesList: itemsCopy });
+        // else this.setState({ toDoList: itemsCopy });
     }
 
     // ------- Work with Firebase tables -------//
@@ -130,6 +148,77 @@ class FirebaseProject extends Component {
             .catch(error => {
                 console.log(error);
                 this.setState({ loading: false });
+            });
+    }
+
+    sendNewItemToServer(currentLink, newItemName) {
+        this.setState({ loading: true });
+
+        const URL = currentLink + ".json";
+
+        axios.post(URL, { name: newItemName })
+            .then(response => {
+                if (response.status === 200) { // OK
+                    return response.data;
+                }
+                throw new Error('Something went wrong with network request');
+            })
+            .then(data => {
+                console.log(`${newItemName} added to the ${URL} with id: ${data.name}`);
+                this.setState({ loading: false });
+            })
+            .finally(() => {
+                this.getItemsFromServer(currentLink);
+            })
+            .catch(error => {
+                console.log(error);
+                this.setState({ loading: false });
+            });
+    }
+
+    updateItemOnServer(currentLink, id, updatedName) {
+        this.setState({ loading: true });
+
+        const URL = `${currentLink}/${id}.json`;
+
+        axios.put(URL, { name: updatedName })
+            .then(response => {
+                if (response.status === 200) { // OK
+                    return response.data;
+                }
+                throw new Error('Something went wrong with network request');
+            })
+            .then(data => {
+                console.log(`Updated item with id: ${id}, new value of name is ${updatedName}`);
+                this.setState({ loading: false });
+            })
+            .finally(() => {
+                this.getItemsFromServer(currentLink);
+            })
+            .catch(error => {
+                console.log(error);
+                this.setState({ loading: false });
+            });
+    }
+
+    deleteItemOnServer(currentLink, id) {
+        const URL = `${currentLink}/${id}.json`;
+
+        axios.delete(URL)
+            .then(response => {
+                if (response.status === 200) { // OK
+                    return response.data;
+                }
+                throw new Error('Something went wrong with network request');
+            })
+            .then(data => {
+                console.log(`Item with id: ${id} deleted from the ${currentLink}`);
+            })
+            .finally(() => {
+                this.getItemsFromServer(currentLink);
+            })
+            .catch(error => {
+                console.log(error);
             });
     }
 
@@ -166,6 +255,7 @@ class FirebaseProject extends Component {
                                                 key={item.id}
                                                 itemName={item.name}
                                                 onItemNameChange={(event) => this.updateItemName(item.id, this.state.toDoList, "toDoList", event)}
+                                                onUpdateClick={() => this.updateItem(item.id, this.state.toDoList)}
                                                 onRemoveClick={() => this.removeItem(item.id, this.state.toDoList, "toDoList")}
                                             />
                                         ))
@@ -186,6 +276,7 @@ class FirebaseProject extends Component {
                                                 key={item.id}
                                                 itemName={item.name}
                                                 onItemNameChange={(event) => this.updateItemName(item.id, this.state.movieNamesList, "movieNamesList", event)}
+                                                onUpdateClick={() => this.updateItem(item.id, this.state.movieNamesList)}
                                                 onRemoveClick={() => this.removeItem(item.id, this.state.movieNamesList, "movieNamesList")}
                                             />
                                         ))
