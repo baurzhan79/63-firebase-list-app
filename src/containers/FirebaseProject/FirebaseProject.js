@@ -9,30 +9,12 @@ import axios from "../../axios-lists";
 
 import Item from "../../components/Item/Item";
 import NewItem from "../../components/NewItem/NewItem";
+import Spinner from "../../components/UI/Spinner/Spinner";
 
 class FirebaseProject extends Component {
     state = {
-        toDoList: [
-            {
-                id: 1,
-                name: "Do homework"
-            },
-            {
-                id: 2,
-                name: "Buy milk"
-            }
-
-        ],
-        movieNamesList: [
-            {
-                id: 1,
-                name: "Avengers"
-            },
-            {
-                id: 2,
-                name: "Avatar"
-            }
-        ],
+        toDoList: [],
+        movieNamesList: [],
         newToDoName: "",
         newMovieName: "",
         activeLink: "",
@@ -222,6 +204,40 @@ class FirebaseProject extends Component {
             });
     }
 
+    componentDidMount() {
+        if (this.state.activeLink === "") this.setState({ activeLink: window.location.pathname });
+    }
+
+    renderItems(newItemName, listTitle, currentList, currentListName) {
+        if (this.state.loading) {
+            return <Spinner />;
+        }
+        else
+            return (
+                <>
+                    {
+                        <NewItem
+                            itemName={this.state[newItemName]}
+                            onItemNameChange={(event) => this.updateNewItemName(event, newItemName)}
+                            onAddClick={() => this.addNewItem(newItemName)}
+                        />
+                    }
+                    <p>{listTitle}</p>
+                    {
+                        currentList.map(item => (
+                            <Item
+                                key={item.id}
+                                itemName={item.name}
+                                onItemNameChange={(event) => this.updateItemName(item.id, currentList, currentListName, event)}
+                                onUpdateClick={() => this.updateItem(item.id, currentList)}
+                                onRemoveClick={() => this.removeItem(item.id, currentList, currentListName)}
+                            />
+                        ))
+                    }
+                </>
+            )
+    }
+
     render() {
         return (
             <>
@@ -242,52 +258,16 @@ class FirebaseProject extends Component {
                         <Routes>
                             <Route path="/" element={<p>Choose your list</p>} />
                             <Route path="/todo" element={
-                                <>
-                                    <NewItem
-                                        itemName={this.state.newToDoName}
-                                        onItemNameChange={(event) => this.updateNewItemName(event, "newToDoName")}
-                                        onAddClick={() => this.addNewItem("newToDoName")}
-                                    />
-                                    <p>To-Do list:</p>
-                                    {
-                                        this.state.toDoList.map(item => (
-                                            <Item
-                                                key={item.id}
-                                                itemName={item.name}
-                                                onItemNameChange={(event) => this.updateItemName(item.id, this.state.toDoList, "toDoList", event)}
-                                                onUpdateClick={() => this.updateItem(item.id, this.state.toDoList)}
-                                                onRemoveClick={() => this.removeItem(item.id, this.state.toDoList, "toDoList")}
-                                            />
-                                        ))
-                                    }
-                                </>
+                                this.renderItems("newToDoName", "To-Do list:", this.state.toDoList, "toDoList")
                             } />
                             <Route path="/movieNames" element={
-                                <>
-                                    <NewItem
-                                        itemName={this.state.newMovieName}
-                                        onItemNameChange={(event) => this.updateNewItemName(event, "newMovieName")}
-                                        onAddClick={() => this.addNewItem("newMovieName")}
-                                    />
-                                    <p>To watch list:</p>
-                                    {
-                                        this.state.movieNamesList.map(item => (
-                                            <Item
-                                                key={item.id}
-                                                itemName={item.name}
-                                                onItemNameChange={(event) => this.updateItemName(item.id, this.state.movieNamesList, "movieNamesList", event)}
-                                                onUpdateClick={() => this.updateItem(item.id, this.state.movieNamesList)}
-                                                onRemoveClick={() => this.removeItem(item.id, this.state.movieNamesList, "movieNamesList")}
-                                            />
-                                        ))
-                                    }
-                                </>
+                                this.renderItems("newMovieName", "To watch list:", this.state.movieNamesList, "movieNamesList")
                             } />
                             <Route path="*" element={<h2>404 Page not found</h2>} />
                         </Routes>
 
                     </Container>
-                </BrowserRouter>
+                </BrowserRouter >
             </>
         )
     }
