@@ -7,6 +7,7 @@ import { Container, Row, Col } from "react-bootstrap";
 import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
 
 import Item from "../../components/Item/Item";
+import NewItem from "../../components/NewItem/NewItem";
 
 class FirebaseProject extends Component {
     state = {
@@ -30,27 +31,69 @@ class FirebaseProject extends Component {
                 id: 2,
                 name: "Avatar"
             }
-        ]
+        ],
+        newToDoName: "",
+        newMovieName: ""
     }
 
     onNavLinkClick = (activeLink) => {
         console.log("pathname =", activeLink);
     }
 
+    // ------- New item -------//
+    updateNewItemName(event, newItemName) {
+        if (newItemName === "newToDoName") this.setState({ newToDoName: event.target.value });
+        else this.setState({ newMovieName: event.target.value });
+    }
+
+    isValidString(str) {
+        const isNull = str === null;
+        const isUndefined = str === undefined;
+        if (!isNull && !isUndefined) {
+            str = str.trim();
+        }
+        if (str) return true;
+        else return false;
+    }
+
+    addNewItem = (newItemName) => {
+        if (!this.isValidString(this.state[newItemName])) {
+            console.log("New item name is empty");
+            return;
+        };
+
+        const DateInMilliseconds = new Date().getTime();
+        const newItem = {
+            id: DateInMilliseconds,
+            name: this.state[newItemName]
+        }
+
+        if (newItemName === "newToDoName") {
+            const itemsCopy = [...this.state.toDoList];
+            itemsCopy.push(newItem);
+            this.setState({ toDoList: itemsCopy, newToDoName: "" });
+        }
+        else {
+            const itemsCopy = [...this.state.movieNamesList];
+            itemsCopy.push(newItem);
+            this.setState({ movieNamesList: itemsCopy, newMovieName: "" });
+        }
+    }
+
     // ------- Items -------//
-    updateItemName = (id, currentState, currentStateKey, event) => {
-        const index = currentState.findIndex(p => p.id === id);
-        const itemsCopy = [...currentState];
+    updateItemName = (id, currentList, currentListName, event) => {
+        const index = currentList.findIndex(p => p.id === id);
+        const itemsCopy = [...currentList];
         itemsCopy[index].name = event.target.value;
-        if (currentStateKey === "movieNamesList") this.setState({ movieNamesList: itemsCopy });
+        if (currentListName === "movieNamesList") this.setState({ movieNamesList: itemsCopy });
         else this.setState({ toDoList: itemsCopy });
     }
 
-    removeItem = (id, currentState, currentStateKey) => {
-        const index = currentState.findIndex(p => p.id === id);
-        const itemsCopy = [...currentState];
+    removeItem = (id, currentList, currentListName) => {
+        const index = currentList.findIndex(p => p.id === id);
+        const itemsCopy = [...currentList];
         itemsCopy.splice(index, 1);
-        if (currentStateKey === "movieNamesList") this.setState({ movieNamesList: itemsCopy });
+        if (currentListName === "movieNamesList") this.setState({ movieNamesList: itemsCopy });
         else this.setState({ toDoList: itemsCopy });
     }
 
@@ -65,7 +108,7 @@ class FirebaseProject extends Component {
                                     <p className="FirebaseProject-header-title">My firebase-list</p>
                                 </Col>
                                 < Col className="mb-2 FirebaseProject-navLink-box" xs={12} lg={5} >
-                                    <NavLink className="FirebaseProject-navLink" to="/todo" onClick={() => this.onNavLinkClick("toDoList")}>ToDo list</NavLink>
+                                    <NavLink className="FirebaseProject-navLink" to="/todo" onClick={() => this.onNavLinkClick("toDoList")}>To-Do list</NavLink>
                                     <NavLink className="FirebaseProject-navLink" to="/movieNames" onClick={() => this.onNavLinkClick("movieNamesList")}>Movie names list</NavLink>
                                 </Col>
                             </Row>
@@ -75,6 +118,12 @@ class FirebaseProject extends Component {
                             <Route path="/" element={<p>Choose your list</p>} />
                             <Route path="/todo" element={
                                 <>
+                                    <NewItem
+                                        itemName={this.state.newToDoName}
+                                        onItemNameChange={(event) => this.updateNewItemName(event, "newToDoName")}
+                                        onAddClick={() => this.addNewItem("newToDoName")}
+                                    />
+                                    <p>To-Do list:</p>
                                     {
                                         this.state.toDoList.map(item => (
                                             <Item
@@ -89,6 +138,12 @@ class FirebaseProject extends Component {
                             } />
                             <Route path="/movieNames" element={
                                 <>
+                                    <NewItem
+                                        itemName={this.state.newMovieName}
+                                        onItemNameChange={(event) => this.updateNewItemName(event, "newMovieName")}
+                                        onAddClick={() => this.addNewItem("newMovieName")}
+                                    />
+                                    <p>To watch list:</p>
                                     {
                                         this.state.movieNamesList.map(item => (
                                             <Item
