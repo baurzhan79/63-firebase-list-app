@@ -5,6 +5,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { Container, Row, Col } from "react-bootstrap";
 
 import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
+import axios from "../../axios-lists";
 
 import Item from "../../components/Item/Item";
 import NewItem from "../../components/NewItem/NewItem";
@@ -33,11 +34,18 @@ class FirebaseProject extends Component {
             }
         ],
         newToDoName: "",
-        newMovieName: ""
+        newMovieName: "",
+        activeLink: "",
+        loading: false
     }
 
-    onNavLinkClick = (activeLink) => {
-        console.log("pathname =", activeLink);
+    onNavLinkClick(event) {
+        const currentLink = event.target.attributes.href.value;
+
+        console.log("pathname =", currentLink);
+        this.setState({ activeLink: currentLink });
+
+        this.getItemsFromServer(currentLink);
     }
 
     // ------- New item -------//
@@ -56,7 +64,7 @@ class FirebaseProject extends Component {
         else return false;
     }
 
-    addNewItem = (newItemName) => {
+    addNewItem(newItemName) {
         if (!this.isValidString(this.state[newItemName])) {
             console.log("New item name is empty");
             return;
@@ -81,7 +89,7 @@ class FirebaseProject extends Component {
     }
 
     // ------- Items -------//
-    updateItemName = (id, currentList, currentListName, event) => {
+    updateItemName(id, currentList, currentListName, event) {
         const index = currentList.findIndex(p => p.id === id);
         const itemsCopy = [...currentList];
         itemsCopy[index].name = event.target.value;
@@ -89,12 +97,40 @@ class FirebaseProject extends Component {
         else this.setState({ toDoList: itemsCopy });
     }
 
-    removeItem = (id, currentList, currentListName) => {
+    removeItem(id, currentList, currentListName) {
         const index = currentList.findIndex(p => p.id === id);
         const itemsCopy = [...currentList];
         itemsCopy.splice(index, 1);
         if (currentListName === "movieNamesList") this.setState({ movieNamesList: itemsCopy });
         else this.setState({ toDoList: itemsCopy });
+    }
+
+    // ------- Work with Firebase tables -------//
+    getItemsFromServer(currentLink) {
+        this.setState({ loading: true });
+
+        const URL = currentLink + ".json";
+
+        axios.get(URL)
+            .then(response => {
+                if (response.status === 200) { // OK
+                    return response.data;
+                }
+                throw new Error('Something went wrong with network request');
+            })
+            .then(apiItems => {
+                const items = [];
+                const arrayOfKeys = Object.keys(apiItems);
+                arrayOfKeys.map(currentKey => (
+                    items.push({ id: currentKey, name: apiItems[currentKey].name })
+                ))
+                if (currentLink === "/todo") this.setState({ toDoList: items, loading: false });
+                else this.setState({ movieNamesList: items, loading: false });
+            })
+            .catch(error => {
+                console.log(error);
+                this.setState({ loading: false });
+            });
     }
 
     render() {
@@ -108,8 +144,8 @@ class FirebaseProject extends Component {
                                     <p className="FirebaseProject-header-title">My firebase-list</p>
                                 </Col>
                                 < Col className="mb-2 FirebaseProject-navLink-box" xs={12} lg={5} >
-                                    <NavLink className="FirebaseProject-navLink" to="/todo" onClick={() => this.onNavLinkClick("toDoList")}>To-Do list</NavLink>
-                                    <NavLink className="FirebaseProject-navLink" to="/movieNames" onClick={() => this.onNavLinkClick("movieNamesList")}>Movie names list</NavLink>
+                                    <NavLink className="FirebaseProject-navLink" to="/todo" onClick={(event) => this.onNavLinkClick(event)}>To-Do list</NavLink>
+                                    <NavLink className="FirebaseProject-navLink" to="/movieNames" onClick={(event) => this.onNavLinkClick(event)}>Movie names list</NavLink>
                                 </Col>
                             </Row>
                         </header>
