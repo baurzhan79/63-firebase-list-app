@@ -1,0 +1,45 @@
+.Item {
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 10px;
+    max-width: 700px;
+    padding: 0 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.Item-input {
+    padding: 10px;
+    border: 1px solid #D6D5D5;
+    box-sizing: border-box;
+    font-size: 16px;
+    margin-bottom: 10px;
+    margin-right: 10px;
+    min-width: 200px;
+    width: 80%;
+}
+
+.Item-btn {
+    outline: none;
+    cursor: pointer;
+    user-select: none;
+    overflow: hidden;
+    border-radius: 10px;
+    border: 0;
+
+    height: 40px;
+    margin-bottom: 10px;
+    font-size: 16px;
+    color: white;
+
+    width: 40px;
+    background: lightslategray;
+}
+
+.Item-btn:active {
+    background: inherit;
+    color: lightslategray;
+    border: 1px solid lightslategray;
+}

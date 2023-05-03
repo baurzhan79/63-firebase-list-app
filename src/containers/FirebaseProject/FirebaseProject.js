@@ -6,6 +6,8 @@ import { Container, Row, Col } from "react-bootstrap";
 
 import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
 
+import Item from "../../components/Item/Item";
+
 class FirebaseProject extends Component {
     state = {
         toDoList: [
@@ -35,6 +37,23 @@ class FirebaseProject extends Component {
         console.log("pathname =", activeLink);
     }
 
+    // ------- Items -------//
+    updateItemName = (id, currentState, currentStateKey, event) => {
+        const index = currentState.findIndex(p => p.id === id);
+        const itemsCopy = [...currentState];
+        itemsCopy[index].name = event.target.value;
+        if (currentStateKey === "movieNamesList") this.setState({ movieNamesList: itemsCopy });
+        else this.setState({ toDoList: itemsCopy });
+    }
+
+    removeItem = (id, currentState, currentStateKey) => {
+        const index = currentState.findIndex(p => p.id === id);
+        const itemsCopy = [...currentState];
+        itemsCopy.splice(index, 1);
+        if (currentStateKey === "movieNamesList") this.setState({ movieNamesList: itemsCopy });
+        else this.setState({ toDoList: itemsCopy });
+    }
+
     render() {
         return (
             <>
@@ -53,20 +72,17 @@ class FirebaseProject extends Component {
                         </header>
 
                         <Routes>
-                            <Route path="/" element={
-                                <>
-                                    {
-                                        this.state.toDoList.map(item => (
-                                            <p key={item.id}>id: {item.id}, name: {item.name}</p>
-                                        ))
-                                    }
-                                </>
-                            } />
+                            <Route path="/" element={<p>Choose your list</p>} />
                             <Route path="/todo" element={
                                 <>
                                     {
                                         this.state.toDoList.map(item => (
-                                            <p key={item.id}>id: {item.id}, name: {item.name}</p>
+                                            <Item
+                                                key={item.id}
+                                                itemName={item.name}
+                                                onItemNameChange={(event) => this.updateItemName(item.id, this.state.toDoList, "toDoList", event)}
+                                                onRemoveClick={() => this.removeItem(item.id, this.state.toDoList, "toDoList")}
+                                            />
                                         ))
                                     }
                                 </>
@@ -75,7 +91,12 @@ class FirebaseProject extends Component {
                                 <>
                                     {
                                         this.state.movieNamesList.map(item => (
-                                            <p key={item.id}>id: {item.id}, name: {item.name}</p>
+                                            <Item
+                                                key={item.id}
+                                                itemName={item.name}
+                                                onItemNameChange={(event) => this.updateItemName(item.id, this.state.movieNamesList, "movieNamesList", event)}
+                                                onRemoveClick={() => this.removeItem(item.id, this.state.movieNamesList, "movieNamesList")}
+                                            />
                                         ))
                                     }
                                 </>
