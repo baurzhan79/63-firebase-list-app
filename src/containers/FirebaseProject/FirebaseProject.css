@@ -1,0 +1,40 @@
+.FirebaseProject-header {
+    background: linear-gradient(to bottom, ivory, lightgray);
+}
+
+.FirebaseProject-header-row {
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+}
+
+.FirebaseProject-header-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 10px;
+    text-align: center;
+}
+
+.FirebaseProject-navLink-box {
+    max-width: 500px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    flex-direction: column;
+}
+
+@media (min-width: 380px) {
+    .FirebaseProject-navLink-box {
+        flex-direction: row;
+    }
+}
+
+.FirebaseProject-navLink {
+    padding: 10px;
+    text-decoration: none;
+}
+
+.FirebaseProject-navLink.active {
+    color: darkgoldenrod;
+}
