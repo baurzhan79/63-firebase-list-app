@@ -257,6 +257,7 @@ class FirebaseProject extends Component {
 
                         <Routes>
                             <Route path="/" element={<p>Choose your list</p>} />
+                            <Route path="/63-firebase-list-app" element={<p>Choose your list</p>} />
                             <Route path="/todo" element={
                                 this.renderItems("newToDoName", "To-Do list:", this.state.toDoList, "toDoList")
                             } />
